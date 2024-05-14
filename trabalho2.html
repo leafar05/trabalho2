@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Search</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="search"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .book-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 300px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .book-author {
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <form>
+        <input type="search" placeholder="Search for a book">
+        <button type="submit">Search</button>
+    </form>
+
+    <ul class="book-list"></ul>
+
+    <script>
+        const apiUrl = 'https://all-books-api.p.rapidapi.com/getBooks';
+        const searchForm = document.querySelector('form');
+        const searchInput = document.querySelector('input[type="search"]');
+        const bookList = document.querySelector('.book-list');
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                try {
+                    const response = await fetch(`${apiUrl}?title=${searchTerm}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-RapidAPI-Key': '72a45461bcmsh55bcac43aba2ed2p12785ajsn0694b19910bd',
+                            'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
+
+                        }
+                    });
+                    const result = await response.json();
+                    const books = result.books;
+                    if (books) {
+                        bookList.innerHTML = ''; // clear the list
+                        books.forEach((book) => {
+                            const card = document.createElement('div');
+                            card.className = 'card';
+                            card.innerHTML = `
+                                <h2 class="book-title">${book.title}</h2>
+                                <p class="book-author">${book.author}</p>
+                            `;
+                            bookList.appendChild(card);
+                        });
+                    } else {
+                        console.log('No books found');
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
