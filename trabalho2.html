@@ -4,121 +4,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Search</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f2f2f2;
-        }
-
-        form {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 50px;
-            background-color: #333;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        input[type="search"] {
-            flex-grow: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-
-        button[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .book-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .card {
-            width: 300px;
-            margin: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .book-title {
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .book-author {
-            font-size: 16px;
-            color: #666;
-        }
-    </style>
+    <title>Book Finder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="trabalho2.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
+        rel="stylesheet">
 </head>
 
-<body>
-    <form>
-        <input type="search" placeholder="Search for a book">
-        <button type="submit">Search</button>
+<body onload="onLoad()">
+    <h1>Book Finder</h1>
+    <form id="search-form">
+        <input type="search" id="search-input" placeholder="Search for a book">
+        <button type="submit" data-bs-toggle="modal" data-bs-target="#myModal"
+            onclick="showModalBySearch()">Search</button>
     </form>
 
     <ul class="book-list"></ul>
 
+    <!-- Modal -->
+
+
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+
     <script>
-        const apiUrl = 'https://all-books-api.p.rapidapi.com/getBooks';
-        const searchForm = document.querySelector('form');
-        const searchInput = document.querySelector('input[type="search"]');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
         const bookList = document.querySelector('.book-list');
+        const apiUrl = 'https://all-books-api.p.rapidapi.com/getBooks';
 
-        searchForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const searchTerm = searchInput.value.trim();
-            if (searchTerm) {
-                try {
-                    const response = await fetch(`${apiUrl}?title=${searchTerm}`, {
-                        method: 'GET',
-                        headers: {
-                            'X-RapidAPI-Key': '72a45461bcmsh55bcac43aba2ed2p12785ajsn0694b19910bd',
-                            'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
+        const myModalObj = new bootstrap.Modal('#myModal', {
+            keyboard: false
+        })
 
-                        }
-                    });
-                    const result = await response.json();
-                    const books = result.books;
-                    if (books) {
-                        bookList.innerHTML = ''; // clear the list
-                        books.forEach((book) => {
-                            const card = document.createElement('div');
-                            card.className = 'card';
-                            card.innerHTML = `
-                                <h2 class="book-title">${book.title}</h2>
-                                <p class="book-author">${book.author}</p>
-                            `;
-                            bookList.appendChild(card);
-                        });
-                    } else {
-                        console.log('No books found');
+        async function fetchBooks(searchTerm) {
+            // $('.class').html('');
+
+            try {
+                const response = await fetch(`${apiUrl}?title=${searchTerm}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-RapidAPI-Key': '72a45461bcmsh55bcac43aba2ed2p12785ajsn0694b19910bd',
+                        'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
                     }
-                } catch (error) {
-                    console.error(error);
+                });
+                //const bookAuthor = document.getElementById('book-author');
+                //const bookImg = document.getElementById('book-img');
+                //const bookDescription = document.getElementById('book-description');
+                //const bookPublisher = document.getElementById('book-publisher');
+                //const bookTitle = document.getElementById('book-title');
+                const books = await response.json();
+                if (books) {
+                    bookList.innerHTML = ''; // Clear the list
+                    books.forEach((book) => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <img class="book-img" src="${book.bookImage}" alt="${book.bookTitle}" onclick="showModalByBook('${book.bookTitle}', '${book.bookAuthor}', '${book.bookDescription}', '${book.bookPublisher}', '${book.bookImage}')">
+                            <h2 class="book-title">${book.bookTitle}</h2>
+                            <p class="book-author">${book.bookAuthor}</p>
+                            <p class="book-description">${book.bookDescription}</p>
+                            <p class="book-publisher">Publisher: ${book.bookPublisher}</p>
+                            <a href="${book.amazonBookUrl}" class="btn btn-outline-info mt-auto">By</a>
+                        `;
+                        bookList.appendChild(card);
+                    });
+                    searchInput.value = ''; // Clear the input
+                } else {
+                    console.log('No books found');
                 }
+            } catch (error) {
+                console.error('Error fetching books:', error);
             }
-        });
+        }
+
+        function onLoad() {
+            searchForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const searchTerm = searchInput.value.trim();
+                fetchBooks(searchTerm);
+            });
+
+            // Perform an initial fetch when the page loads
+            fetchBooks('');
+        }
+
+        const bookContent = document.querySelector('.book-content');
+
+        async function showModalBySearch(searchTerm) {
+    try {
+        const url2 = `https://all-books-api.p.rapidapi.com/title/${searchTerm}`;
+        const options = {
+            method: 'GET',
+            headers: {
+                'X-RapidAPI-Key': '72a45461bcmsh55bcac43aba2ed2p12785ajsn0694b19910bd',
+                'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
+            }
+        };
+
+        const response = await fetch(url2, options);
+        const books = await response.json();
+        if (books.length > 0) {
+            const book = books[0]; // Assuming you only want to display the first book found
+            document.getElementById('modalContent').innerHTML = `
+                <img class="book-img" src="${book.bookImage}" alt="${book.bookTitle}">
+                <h2 class="book-title">${book.bookTitle}</h2>
+                <p class="book-author">${book.bookAuthor}</p>
+                <p class="book-description">${book.bookDescription}</p>
+                <p class="book-publisher">Publisher: ${book.bookPublisher}</p>
+            `;
+            myModalObj.show();
+        } else {
+            console.log('No books found');
+        }
+    } catch (error) {
+        console.error('Error fetching book details:', error);
+    }
+}
+
+        async function showModalByBook(title, author, description, publisher, image) {
+            document.getElementById('bookContent').innerHTML = `
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <img class="book-img" src="${image}" alt="${title}">
+            <h2 class="book-title">${title}</h2>
+            <p class="book-author">${author}</p>
+            <p class="book-description">${description}</p>
+            <p class="book-publisher">Publisher: ${publisher}</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+    `;
+            myModalObj.toggle();
+        }
+
     </script>
 </body>
 
