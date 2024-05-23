@@ -19,8 +19,7 @@
     <h1>Book Finder</h1>
     <form id="search-form">
         <input type="search" id="search-input" placeholder="Search for a book">
-        <button type="submit" data-bs-toggle="modal" data-bs-target="#myModal"
-            onclick="showModalBySearch()">Search</button>
+        <button type="submit" onclick="showModalBySearch()">Search</button>
     </form>
 
     <ul class="book-list"></ul>
@@ -51,7 +50,7 @@
         const searchForm = document.getElementById('search-form');
         const searchInput = document.getElementById('search-input');
         const bookList = document.querySelector('.book-list');
-        const apiUrl = 'https://all-books-api.p.rapidapi.com/getBooks';
+
 
         const myModalObj = new bootstrap.Modal('#myModal', {
             keyboard: false
@@ -59,8 +58,9 @@
 
         async function fetchBooks(searchTerm) {
             // $('.class').html('');
-
+            const apiUrl = 'https://all-books-api.p.rapidapi.com/getBooks';
             try {
+
                 const response = await fetch(`${apiUrl}?title=${searchTerm}`, {
                     method: 'GET',
                     headers: {
@@ -68,6 +68,12 @@
                         'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
                     }
                 });
+                //DEVES VER SEMPRE SE A RESPOSTA VEIO OK ANTES DE TENTAR CONVERTER PARA JSON
+                if (!response.ok) {
+                    // Handle the error response (e.g., log it, throw an error, etc.)
+                    console.error('Failed to fetch data:', response.status, response.statusText);
+                    return;
+                }
                 //const bookAuthor = document.getElementById('book-author');
                 //const bookImg = document.getElementById('book-img');
                 //const bookDescription = document.getElementById('book-description');
@@ -79,13 +85,19 @@
                     books.forEach((book) => {
                         const card = document.createElement('div');
                         card.className = 'card';
+                        //ESTA PARTE AQUI PODE NÃO ESTAR 100% E ERA COMPLICADA DE RESOLVER PORQUE EXISTEM NOMES QUE TÊM ' OU " TENTEI FAZER ESCAPE E PARA VER SE AS COISAS FUNCIONAM
+                        const bookTitle = escapeHtml(book.bookTitle);
+                        const bookAuthor = escapeHtml(book.bookAuthor);
+                        const bookDescription = escapeHtml(book.bookDescription);
+                        const bookPublisher = escapeHtml(book.bookPublisher);
+                        const bookImage = escapeHtml(book.bookImage ?? 'https://fakeimg.pl/600x400');
                         card.innerHTML = `
-                            <img class="book-img" src="${book.bookImage}" alt="${book.bookTitle}" onclick="showModalByBook('${book.bookTitle}', '${book.bookAuthor}', '${book.bookDescription}', '${book.bookPublisher}', '${book.bookImage}')">
-                            <h2 class="book-title">${book.bookTitle}</h2>
-                            <p class="book-author">${book.bookAuthor}</p>
-                            <p class="book-description">${book.bookDescription}</p>
-                            <p class="book-publisher">Publisher: ${book.bookPublisher}</p>
-                            <a href="${book.amazonBookUrl}" class="btn btn-outline-info mt-auto">By</a>
+                            <img class="book-img" src="${bookImage}" alt="${bookTitle}" onclick="showModalByBook(\`${bookTitle}\`, \`${bookAuthor}\`, \`${bookDescription}\`, \`${bookPublisher}\`, \`${bookImage}\`)">
+                            <h2 class="book-title">${bookTitle}</h2>
+                            <p class="book-author">${bookAuthor}</p>
+                            <p class="book-description">${bookDescription}</p>
+                            <p class="book-publisher">Publisher: ${bookPublisher}</p>
+                            <a href="${book.amazonBookUrl}" class="btn btn-info mt-auto">Buy</a>
                         `;
                         bookList.appendChild(card);
                     });
@@ -111,56 +123,92 @@
 
         const bookContent = document.querySelector('.book-content');
 
-        async function showModalBySearch(searchTerm) {
-    try {
-        const url2 = `https://all-books-api.p.rapidapi.com/title/${searchTerm}`;
-        const options = {
-            method: 'GET',
-            headers: {
-                'X-RapidAPI-Key': '72a45461bcmsh55bcac43aba2ed2p12785ajsn0694b19910bd',
-                'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
-            }
-        };
+        //ESTA FUNÇÃO É CHAMADA NUM BOTÃO E NÃO VAI TRAZER O PARAMETRO SEARCHTERM VAIS TER QUE LER O CAMPO DE INPUT
+        async function showModalBySearch() {
+            const searchTerm = searchInput.value.trim().toUpperCase();
 
-        const response = await fetch(url2, options);
-        const books = await response.json();
-        if (books.length > 0) {
-            const book = books[0]; // Assuming you only want to display the first book found
-            document.getElementById('modalContent').innerHTML = `
-                <img class="book-img" src="${book.bookImage}" alt="${book.bookTitle}">
-                <h2 class="book-title">${book.bookTitle}</h2>
-                <p class="book-author">${book.bookAuthor}</p>
-                <p class="book-description">${book.bookDescription}</p>
-                <p class="book-publisher">Publisher: ${book.bookPublisher}</p>
+            try {
+                console.log(searchInput);
+                const url2 = `https://all-books-api.p.rapidapi.com/title/${searchTerm}`;
+                const options = {
+                    method: 'GET',
+                    headers: {
+                        'X-RapidAPI-Key': '72a45461bcmsh55bcac43aba2ed2p12785ajsn0694b19910bd',
+                        'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
+                    }
+                };
+                console.log(url2);
+
+                const response = await fetch(url2, options);
+                //DEVES VER SEMPRE SE A RESPOSTA VEIO OK ANTES DE TENTAR CONVERTER PARA JSON
+                if (!response.ok) {
+                    // Handle the error response (e.g., log it, throw an error, etc.)
+                    console.error('Failed to fetch data:', response.status, response.statusText);
+                    return;
+                }
+                console.log(response);
+                const books2 = await response.json();
+                console.log(books2);
+                if (books2) {
+                    // const book = books[0]; // Assuming you only want to display the first book found
+                    //AQUI TINHAS O ID PARA O MODAL ERRADO É "myModal"
+                    document.getElementById('myModal').innerHTML = `
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">More Informations</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="img">
+                        <img class="modal-img" src="${books2.bookImage}" alt="${books2.bookTitle}">
+                    </div>
+                    <h2 class="modal-title">${books2.bookTitle}</h2>
+                    <p class="modal-author">${books2.bookAuthor}</p>
+                    <p class="modal-description">${books2.bookDescription}</p>
+                    <p class="modal-publisher">Publisher: ${books2.bookPublisher}</p>
+                    <p class="modal-isbn">N.º ISBN: ${books2.bookIsbn}</p>
+                    <p class="modal-rank">Book Ranking: ${books2.bookRank}</p>
+                    <a href="${books2.amazonBookUrl}" class="btn btn-info" style="text-align: center">Buy</a>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
             `;
-            myModalObj.show();
-        } else {
-            console.log('No books found');
+                    myModalObj.show();
+                } else {
+                    console.log('No books found');
+                }
+            } catch (error) {
+                console.error('Error fetching book details:', error);
+            }
         }
-    } catch (error) {
-        console.error('Error fetching book details:', error);
-    }
-}
 
         async function showModalByBook(title, author, description, publisher, image) {
-            document.getElementById('bookContent').innerHTML = `
+            //AQUI TINHAS O ID PARA O MODAL ERRADO É "myModal"
+            document.getElementById('myModal').innerHTML = `
         <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <h5 class="modal-title" id="exampleModalLabel">More Informations</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <img class="book-img" src="${image}" alt="${title}">
-            <h2 class="book-title">${title}</h2>
-            <p class="book-author">${author}</p>
-            <p class="book-description">${description}</p>
-            <p class="book-publisher">Publisher: ${publisher}</p>
+            <div class="img">
+            <img class="modal-img" src="${image}" alt="${title}">
+            </div>
+            <h2 class="modal-title">${title}</h2>
+            <p class="modal-author">${author}</p>
+            <p class="modal-description">${description}</p>
+            <p class="modal-publisher">Publisher: ${publisher}</p>
+            <p class="more">For more information, search the book</p>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
         </div>
     `;
             myModalObj.toggle();
+        }
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
     </script>

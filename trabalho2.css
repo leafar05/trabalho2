@@ -87,3 +87,26 @@ button:hover[type="submit"] {
     font-size: 16px;
     color: #666;
 }
+
+.btn{
+    display: flex;
+    align-items: center;
+}
+
+.modal-img {
+    width: 20%;
+}
+
+.modal-dialog { 
+    
+    display: flex;
+    align-items: center; /* Alinha verticalmente no centro */
+    width: 60%;
+    height: 60%;
+}
+
+.modal {
+    background-color: #fff;
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente na página */
+}
